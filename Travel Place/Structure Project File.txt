@@ -1,0 +1,18 @@
+travel-management-system/
+│
+├── index.html              # Login Page
+├── dashboard.html          # Dashboard with Sidebar
+├── details.html            # Details View
+├── form.html               # Add/Edit Form
+│
+├── css/
+│   └── style.css           # Custom Styles
+│
+├── js/
+│   ├── auth.js             # Authentication
+│   ├── storage.js          # Local Storage Operations
+│   ├── dashboard.js        # Dashboard Logic
+│   ├── details.js          # Details View
+│   └── form.js             # Form Handling
+│
+└── images/                 # Placeholder images (optional)

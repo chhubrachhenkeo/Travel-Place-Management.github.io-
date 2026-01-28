@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Travel Places</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        .warning {
+            border-color: #ffc107;
+            background-color: #fff3cd;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Travel Places Debug Tool</h1>
+
+    <div id="auth-status" class="debug-section">
+        <h3>Authentication Status</h3>
+        <div id="auth-info">Checking...</div>
+    </div>
+
+    <div id="storage-status" class="debug-section">
+        <h3>Storage Status</h3>
+        <div id="storage-info">Checking...</div>
+    </div>
+
+    <div id="data-status" class="debug-section">
+        <h3>Data Status</h3>
+        <div id="data-info">Checking...</div>
+    </div>
+
+    <div id="actions" class="debug-section">
+        <h3>Actions</h3>
+        <button onclick="clearStorage()">Clear All Data</button>
+        <button onclick="resetStorage()">Reset to Sample Data</button>
+        <button onclick="checkData()">Refresh Status</button>
+        <a href="dashboard.html"><button>Go to Dashboard</button></a>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        function updateStatus() {
+            // Check authentication
+            const authSection = document.getElementById('auth-status');
+            const authInfo = document.getElementById('auth-info');
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+
+            if (currentUser) {
+                authInfo.innerHTML = `
+                    <strong class="success">✓ Logged in as: ${currentUser.username}</strong><br>
+                    Login time: ${new Date(currentUser.loginTime).toLocaleString()}
+                `;
+                authSection.className = 'debug-section success';
+            } else {
+                authInfo.innerHTML = `
+                    <strong class="error">✗ Not logged in</strong><br>
+                    <a href="index.html">Go to login page</a>
+                `;
+                authSection.className = 'debug-section error';
+            }
+
+            // Check storage
+            const storageSection = document.getElementById('storage-status');
+            const storageInfo = document.getElementById('storage-info');
+            const storageData = localStorage.getItem('travelPlaces');
+
+            if (storageData) {
+                try {
+                    const places = JSON.parse(storageData);
+                    storageInfo.innerHTML = `
+                        <strong class="success">✓ Storage initialized</strong><br>
+                        Found ${places.length} places in localStorage
+                    `;
+                    storageSection.className = 'debug-section success';
+                } catch (e) {
+                    storageInfo.innerHTML = `
+                        <strong class="error">✗ Storage data corrupted</strong><br>
+                        Error: ${e.message}
+                    `;
+                    storageSection.className = 'debug-section error';
+                }
+            } else {
+                storageInfo.innerHTML = `
+                    <strong class="warning">⚠ No data in localStorage</strong><br>
+                    Storage not initialized yet
+                `;
+                storageSection.className = 'debug-section warning';
+            }
+
+            // Check data loading
+            const dataSection = document.getElementById('data-status');
+            const dataInfo = document.getElementById('data-info');
+
+            try {
+                // Initialize storage if needed
+                if (typeof initializeStorage === 'function') {
+                    initializeStorage();
+                }
+
+                // Get places
+                if (typeof getAllPlaces === 'function') {
+                    const places = getAllPlaces();
+                    dataInfo.innerHTML = `
+                        <strong class="success">✓ Data loading works</strong><br>
+                        Successfully loaded ${places.length} places<br>
+                        ${places.length > 0 ? 'First place: ' + places[0].name : 'No places found'}
+                    `;
+                    dataSection.className = 'debug-section success';
+                } else {
+                    dataInfo.innerHTML = `
+                        <strong class="error">✗ getAllPlaces function not found</strong>
+                    `;
+                    dataSection.className = 'debug-section error';
+                }
+            } catch (error) {
+                dataInfo.innerHTML = `
+                    <strong class="error">✗ Error loading data</strong><br>
+                    Error: ${error.message}
+                `;
+                dataSection.className = 'debug-section error';
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('travelPlaces');
+            localStorage.removeItem('travelStats');
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('userToken');
+            updateStatus();
+            alert('All data cleared!');
+        }
+
+        function resetStorage() {
+            localStorage.removeItem('travelPlaces');
+            localStorage.removeItem('travelStats');
+            if (typeof initializeStorage === 'function') {
+                initializeStorage();
+            }
+            updateStatus();
+            alert('Data reset to sample data!');
+        }
+
+        function checkData() {
+            updateStatus();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', updateStatus);
+    </script>
+</body>
+
+</html>
